@@ -1,0 +1,2 @@
+rm -f *.ko *.o *.mod.c .*.cmd
+rm -rf .tmp_versions modules.order Module.symvers
