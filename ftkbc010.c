@@ -209,7 +209,7 @@ static int __devinit ftkbc010_probe(struct platform_device *pdev)
 		goto err_ioremap;
 	}
 
-	ret = request_irq(irq, ftkbc010_interrupt, 0, dev->bus_id, ftkbc010);
+	ret = request_irq(irq, ftkbc010_interrupt, 0, pdev->name, ftkbc010);
 	if (ret < 0) {
 		dev_err(dev, "Failed to request irq %d\n", irq);
 		goto err_req_irq;
