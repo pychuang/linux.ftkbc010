@@ -26,6 +26,7 @@
 #include <linux/input.h>
 #include <linux/kthread.h>
 #include <linux/delay.h>
+#include <linux/slab.h>
 
 #include <asm/io.h>
 
