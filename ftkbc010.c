@@ -195,14 +195,14 @@ static int __devinit ftkbc010_probe(struct platform_device *pdev)
 	/*
 	 * Map io memory
 	 */
-	ftkbc010->res = request_mem_region(res->start, res->end - res->start, dev_name(dev));
+	ftkbc010->res = request_mem_region(res->start, resource_size(res), dev_name(dev));
 	if (!ftkbc010->res) {
 		dev_err(dev, "Resources is unavailable.\n");
 		ret = -EBUSY;
 		goto err_req_mem_region;
 	}
 
-	ftkbc010->base = ioremap(res->start, res->end - res->start);
+	ftkbc010->base = ioremap(res->start, resource_size(res));
 	if (!ftkbc010->base) {
 		dev_err(dev, "Failed to map registers.\n");
 		ret = -ENOMEM;
@@ -257,7 +257,7 @@ err_register_input:
 err_req_irq:
 	iounmap(ftkbc010->base);
 err_ioremap:
-	release_mem_region(res->start, res->end - res->start);
+	release_mem_region(res->start, resource_size(res));
 err_req_mem_region:
 	input_free_device(ftkbc010->input);
 err_alloc_input_dev:
@@ -279,7 +279,7 @@ static int __devexit ftkbc010_remove(struct platform_device *pdev)
 	input_unregister_device(ftkbc010->input);
 	free_irq(ftkbc010->irq, ftkbc010);
 	iounmap(ftkbc010->base);
-	release_mem_region(res->start, res->end - res->start);
+	release_mem_region(res->start, resource_size(res));
 	input_free_device(ftkbc010->input);
 	platform_set_drvdata(pdev, ftkbc010);
 	kfree(ftkbc010);
