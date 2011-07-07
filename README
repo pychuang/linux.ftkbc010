@@ -2,6 +2,23 @@ Usage:
 
 * put the following code in your platform-dpendent initialization sequence.
 ------------------------>8-------------------------->8------------------------
+static const unsigned int default_keymap[] = {
+	KEY(0, 0, KEY_BACK),	KEY(0, 1, KEY_MENU),	KEY(0, 2, KEY_HOME),
+	KEY(1, 0, KEY_UP),	KEY(1, 1, KEY_DOWN),	KEY(1, 2, KEY_RIGHT),
+	KEY(2, 0, KEY_DOWN),	KEY(2, 1, KEY_SLEEP),	KEY(2, 2, KEY_WAKEUP),
+};
+
+static const struct matrix_keymap_data default_keymap_data = {
+	.keymap = default_keymap,
+	.keymap_size = ARRAY_SIZE(default_keymap),
+};
+
+static struct matrix_keypad_platform_data platform_keypad_config = {
+	.keymap_data = &default_keymap_data,
+	.num_row_gpios = 3,
+	.num_col_gpios = 3,
+};
+
 static struct resource ftkbc010_resources[] = {
 	{
 		.start  = KBC_FTKBC010_0_PA_BASE,
@@ -19,6 +36,9 @@ static struct platform_device ftkbc010_device = {
 	.id		= -1,
 	.num_resources	= ARRAY_SIZE(ftkbc010_resources),
 	.resource	= ftkbc010_resources,
+	.dev		= {
+		.platform_data = &platform_keypad_config,
+	}
 };
 
 platform_device_register(&ftkbc010_device );
