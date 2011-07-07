@@ -1,6 +1,6 @@
 Usage:
 
-* put the following code in your platform-dpendent initialization sequence.
+* put the following code in your platform-dependent initialization sequence.
 ------------------------>8-------------------------->8------------------------
 static const unsigned int default_keymap[] = {
 	KEY(0, 0, KEY_BACK),	KEY(0, 1, KEY_MENU),	KEY(0, 2, KEY_HOME),
