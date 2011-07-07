@@ -110,17 +110,17 @@ static irqreturn_t ftkbc010_interrupt(int irq, void *dev_id)
 
 	if (status & FTKBC010_ISR_PADINT) {
 		unsigned int data;
-		unsigned int x, y;
+		unsigned int row, col;
 		unsigned int scancode;
 		unsigned int keycode;
 
 		data = ioread32(ftkbc010->base + FTKBC010_OFFSET_XC);
-		x = ffs(0xff - FTKBC010_XC_L(data)) - 1;
+		col = ffs(0xff - FTKBC010_XC_L(data)) - 1;
 
 		data = ioread32(ftkbc010->base + FTKBC010_OFFSET_YC);
-		y = ffs(0xff - FTKBC010_YC_L(data)) - 1;
+		row = ffs(0xff - FTKBC010_YC_L(data)) - 1;
 
-		scancode = MATRIX_SCAN_CODE(x, y, ftkbc010->row_shift);
+		scancode = MATRIX_SCAN_CODE(row, col, ftkbc010->row_shift);
 
 		keycode = ftkbc010->keycode[scancode];
 
@@ -132,7 +132,7 @@ static irqreturn_t ftkbc010_interrupt(int irq, void *dev_id)
 		input_sync(input);
 
 		dev_info(&input->dev, "(%x, %x) scancode %d, keycode %d\n",
-			x, y, scancode, keycode);
+			row, col, scancode, keycode);
 
 		cr |= FTKBC010_CR_CL_PADINT;
 	}
