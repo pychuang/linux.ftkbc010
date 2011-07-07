@@ -257,7 +257,7 @@ err_register_input:
 err_req_irq:
 	iounmap(ftkbc010->base);
 err_ioremap:
-//	release_mem_region(res->start, res->end - res->start);
+	release_mem_region(res->start, res->end - res->start);
 err_req_mem_region:
 	input_free_device(ftkbc010->input);
 err_alloc_input_dev:
@@ -279,7 +279,7 @@ static int __devexit ftkbc010_remove(struct platform_device *pdev)
 	input_unregister_device(ftkbc010->input);
 	free_irq(ftkbc010->irq, ftkbc010);
 	iounmap(ftkbc010->base);
-//	release_mem_region(res->start, res->end - res->start);
+	release_mem_region(res->start, res->end - res->start);
 	input_free_device(ftkbc010->input);
 	platform_set_drvdata(pdev, ftkbc010);
 	kfree(ftkbc010);
