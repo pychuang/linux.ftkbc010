@@ -27,28 +27,25 @@
 #include <linux/kthread.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
+#include <linux/input/matrix_keypad.h>
 
 #include <asm/io.h>
 
 #include "ftkbc010.h"
 
-#define KB_ROWS		4
-#define KB_COLS		4
-#define SCANCODE(x, y)	((x) * KB_ROWS + (y))
-
-static unsigned char ftkbc010_default_keycode[] = {
-	KEY_BACK, KEY_MENU, KEY_HOME, 0,		/* 0 - 3 */
-	0, KEY_UP, 0, 0,				/* 4 - 7 */
-	KEY_RIGHT, KEY_REPLY, KEY_LEFT, KEY_VOLUMEUP,	/* 8 - 11 */
-	KEY_END, KEY_DOWN, KEY_SEND, KEY_VOLUMEDOWN,	/* 12 - 15 */
-};
+#define MAX_KEY_ROWS	8
+#define MAX_KEY_COLS	8
+#define MAX_KEYPAD_KEYS	(MAX_KEY_ROWS * MAX_KEY_COLS)
 
 struct ftkbc010 {
-	unsigned char keycode[ARRAY_SIZE(ftkbc010_default_keycode)];
+	unsigned char keycode[MAX_KEYPAD_KEYS];
 	struct input_dev *input;
 	struct resource *res;
 	void *base;
 	int irq;
+	unsigned int rows;
+	unsigned int cols;
+	unsigned int row_shift;
 };
 
 /******************************************************************************
@@ -123,7 +120,7 @@ static irqreturn_t ftkbc010_interrupt(int irq, void *dev_id)
 		data = ioread32(ftkbc010->base + FTKBC010_OFFSET_YC);
 		y = ffs(0xff - FTKBC010_YC_L(data)) - 1;
 
-		scancode = SCANCODE(x, y);
+		scancode = MATRIX_SCAN_CODE(x, y, ftkbc010->row_shift);
 
 		keycode = ftkbc010->keycode[scancode];
 
@@ -150,13 +147,24 @@ static irqreturn_t ftkbc010_interrupt(int irq, void *dev_id)
  *****************************************************************************/
 static int __devinit ftkbc010_probe(struct platform_device *pdev)
 {
+	struct matrix_keypad_platform_data *pdata = pdev->dev.platform_data;
 	struct device *dev = &pdev->dev;
 	struct ftkbc010 *ftkbc010;
 	struct input_dev *input;
 	struct resource *res;
+	unsigned int row_shift, max_keys;
 	int irq;
 	int ret;
-	int i;
+
+	if (!pdata) {
+		dev_err(&pdev->dev, "no platform data defined\n");
+		return -EINVAL;
+	}
+
+	if (!pdata->keymap_data) {
+		dev_err(&pdev->dev, "no keymap data defined\n");
+		return -EINVAL;
+	}
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {
@@ -216,26 +224,24 @@ static int __devinit ftkbc010_probe(struct platform_device *pdev)
 	}
 	ftkbc010->irq = irq;
 
+	row_shift = get_count_order(pdata->num_col_gpios);
+	max_keys = pdata->num_row_gpios << row_shift;
+	ftkbc010->rows = pdata->num_row_gpios;
+	ftkbc010->cols = pdata->num_col_gpios;
+	ftkbc010->row_shift = row_shift;
+
 	input->name = "Faraday keyboard controller";
-
-	/*
-	 * Setup default scancode to keycode mapping
-	 */
-	memcpy(ftkbc010->keycode, ftkbc010_default_keycode, sizeof(ftkbc010->keycode));
-
 	input->keycode		= ftkbc010->keycode;
-	input->keycodesize	= sizeof(unsigned char);
-	input->keycodemax	= ARRAY_SIZE(ftkbc010_default_keycode);
+	input->keycodesize	= sizeof(ftkbc010->keycode[0]);
+	input->keycodemax	= max_keys;
 
 	/*
 	 * Declare what events and event codes can be generated
 	 */
 	input->evbit[0] = BIT_MASK(EV_KEY);
 
-	for (i = 0; i < ARRAY_SIZE(ftkbc010_default_keycode); i++)
-		set_bit(ftkbc010->keycode[i], input->keybit);
-
-	clear_bit(0, input->keybit);
+	matrix_keypad_build_keymap(pdata->keymap_data, row_shift,
+				   input->keycode, input->keybit);
 
 	/*
 	 * Enable hardware
