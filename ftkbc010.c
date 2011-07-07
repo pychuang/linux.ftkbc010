@@ -38,7 +38,7 @@
 #define MAX_KEYPAD_KEYS	(MAX_KEY_ROWS * MAX_KEY_COLS)
 
 struct ftkbc010 {
-	unsigned char keycode[MAX_KEYPAD_KEYS];
+	unsigned short keycode[MAX_KEYPAD_KEYS];
 	struct input_dev *input;
 	struct resource *res;
 	void *base;
