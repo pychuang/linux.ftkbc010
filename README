@@ -3,9 +3,9 @@ Usage:
 * put the following code in your platform-dependent initialization sequence.
 ------------------------>8-------------------------->8------------------------
 static const unsigned int default_keymap[] = {
-	KEY(0, 0, KEY_BACK),	KEY(0, 1, KEY_MENU),	KEY(0, 2, KEY_HOME),
-	KEY(1, 0, KEY_UP),	KEY(1, 1, KEY_DOWN),	KEY(1, 2, KEY_RIGHT),
-	KEY(2, 0, KEY_DOWN),	KEY(2, 1, KEY_SLEEP),	KEY(2, 2, KEY_WAKEUP),
+	KEY(0, 0, KEY_BACK),	KEY(0, 1, KEY_UP),	KEY(0, 2, KEY_HOME),
+	KEY(1, 0, KEY_LEFT),	KEY(1, 1, KEY_MENU),	KEY(1, 2, KEY_RIGHT),
+	KEY(2, 0, KEY_SLEEP),	KEY(2, 1, KEY_DOWN),	KEY(2, 2, KEY_WAKEUP),
 };
 
 static const struct matrix_keymap_data default_keymap_data = {
